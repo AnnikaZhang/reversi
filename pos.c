@@ -1,37 +1,53 @@
 #include "pos.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-enum square { EMPTY, BLACK, WHITE };
+/* make a pos given row and col number (return a pos, not pointer). */
+pos make_pos(unsigned int r, unsigned int c) {
+  pos res;
+  res.c = c;
+  res.r = r;
+  return res;
+}
 
-typedef enum square square;
+/* cons a poslist. */
+poslist *pos_cons(pos p, poslist *ps) {
+  poslist *res = (poslist *)malloc(sizeof(poslist));
+  res->p = p;
+  res->next = ps;
+  return res;
+}
 
-union board_rep {
-    enum square **cells;
-    unsigned int *bits;
-};
+/* return a poslist combing the given two polists. */
+poslist *pos_append(poslist *l1, poslist *l2) {
+  if (!l1)
+    return l2;
+  else
+    return pos_cons(l1->p, pos_append(l1->next, l2));
+}
 
-typedef union board_rep board_rep;
+/* free the pointers in a poslist. */
+void poslist_free(poslist *ps) {
+  if (ps != NULL) {
+    poslist_free(ps->next);
+    free(ps);
+  }
+}
 
-enum type { CELLS, BITS };
+unsigned int poslist_len(poslist *ps) {
+  poslist *cur = ps;
+  unsigned res = 0;
+  while (cur) {
+    res++;
+    cur = cur->next;
+  }
+  return res;
+}
 
-struct board {
-    unsigned int nrows, ncols;
-    enum type type;
-    board_rep u;
-};
-
-typedef struct board board;
-
-/* make a new board given dimensions and representation type. */
-board *board_new(unsigned int nrows, unsigned int ncols, enum type type);
-
-/* free the pointers in board. */
-void board_free(board *b);
-
-/* visualize the square information in a board. */
-void board_show(board *b);
-
-/* given a board and a pos, return the square information. */
-square board_get(board *b, pos p);
-
-/* change the pos in a board to a given square. */
-void board_set(board *b, pos p, square s);
+/* print a poslist. */
+void poslist_show(poslist *ps) {
+  while (ps) {
+    printf("(%d,%d) ", ps->p.r, ps->p.c);
+    ps = ps->next;
+  }
+}
